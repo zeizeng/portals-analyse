@@ -5,6 +5,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import personal.weizeng.portals.utils.HttpClientGenerator;
 import personal.weizeng.portals.utils.HttpClientUtil;
 
 import java.io.IOException;
@@ -19,7 +20,6 @@ public class TieBaSpider {
     private static final Logger logger = LoggerFactory.getLogger(TieBaSpider.class);
     private static final String INDEX_URL;
 
-    private static final CloseableHttpClient closeableHttpClient = HttpClients.createDefault();
     private static final String DEFAULT_CHARSET;
     private static final HashMap<String,String> HEADER =new HashMap<>();
 
@@ -41,6 +41,7 @@ public class TieBaSpider {
     }
 
     public void crawlIndexOfTieBa() {
+        CloseableHttpClient closeableHttpClient = HttpClientGenerator.getHttpClient();
         String html=null;
         try {
             html = HttpClientUtil.doGet(closeableHttpClient, INDEX_URL, DEFAULT_CHARSET,HEADER);

@@ -10,13 +10,9 @@ import java.util.HashMap;
  */
 public class TieBaParser {
 
-    public static HashMap<String,String>getCategoryAndUrl(String indexHtmlString){
-        HashMap<String,String> result = new HashMap<>();
-
+    public static HashMap<String, String> getCategoryAndUrl(String indexHtmlString) {
+        HashMap<String, String> result = new HashMap<>();
         Document indexDoc = Jsoup.parse(indexHtmlString);
-
-
-
 
 
         return result;
