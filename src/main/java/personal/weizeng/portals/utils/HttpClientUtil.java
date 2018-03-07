@@ -25,11 +25,11 @@ public class HttpClientUtil {
 
     private static final Logger logger = LoggerFactory.getLogger(HttpClientUtil.class);
 
-    public static String doGet(CloseableHttpClient httpClient, String url, String charset) throws IOException {
+    public static String doGet(CloseableHttpClient httpClient, String url, String charset,HashMap<String,String> header) throws IOException {
         String html = null;
         logger.info("开始抓取网页：" + url);
         HttpGet httpGet = new HttpGet(url);
-        CloseableHttpResponse closeableHttpResponse = get(httpClient, httpGet, 5000, new HashMap<>());
+        CloseableHttpResponse closeableHttpResponse = get(httpClient, httpGet, 5000, header);
         try {
             html = getHtml(closeableHttpResponse, charset);
         } finally {
