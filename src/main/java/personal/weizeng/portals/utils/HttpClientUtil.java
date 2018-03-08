@@ -29,7 +29,7 @@ public class HttpClientUtil {
         String html = null;
         logger.info("开始抓取网页：" + url);
         HttpGet httpGet = new HttpGet(url);
-        CloseableHttpResponse closeableHttpResponse = get(httpClient, httpGet, 5000, header);
+        CloseableHttpResponse closeableHttpResponse = get(httpClient, httpGet, 1000, header);
         try {
             html = getHtml(closeableHttpResponse, charset);
         } finally {
