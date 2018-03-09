@@ -9,6 +9,8 @@ import personal.weizeng.portals.dto.tieba.TiebaDto;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by Administrator on 2018/3/6.
@@ -21,6 +23,9 @@ public class TieBaParser {
 
         Document indexDoc = Jsoup.parse(indexHtmlString);
         Element right_sec = indexDoc.getElementById("right-sec");
+        if (right_sec == null) {
+            return categoryDtos;
+        }
         Elements class_items = right_sec.getElementsByClass("class-item");
 
         for (Element element : class_items) {
@@ -41,8 +46,10 @@ public class TieBaParser {
 
     public static int getLastPageNum(String html) {
         Document doc = Jsoup.parse(html);
-        Element ba_list = doc.getElementById("ba_list");
         Elements pagination = doc.getElementsByClass("pagination");
+        if (pagination == null) {
+            return 0;
+        }
         Element lastPageEle = pagination.first().getElementsByTag("a").last();
         String lastPageHref = lastPageEle.attr("href");
         String lastPageNum = lastPageHref.substring(lastPageHref.trim().indexOf("pn=") + 3).trim();
@@ -54,6 +61,9 @@ public class TieBaParser {
         HashMap<String, String> tieBaNameAndUrl = new HashMap<>();
         Document doc = Jsoup.parse(html);
         Element ba_list = doc.getElementById("ba_list");
+        if (ba_list == null) {
+            return tieBaNameAndUrl;
+        }
         Elements ba_info = ba_list.getElementsByClass("ba_info");
         for (Element element : ba_info) {
             Element ba_href = element.getElementsByClass("ba_href").first();
@@ -65,9 +75,83 @@ public class TieBaParser {
         return tieBaNameAndUrl;
     }
 
-    public static void getDetails(String html,TiebaDto tiebaDto){
+    public static void getHeadInfo(String html, TiebaDto tiebaDto) {
         Document doc = Jsoup.parse(html);
 
+        Element pageHead = doc.getElementById("pagelet_html_forum/pagelet/forum_card_number");
+        if (pageHead == null)
+            return;
+        Document spanDoc = Jsoup.parse(pageHead.getElementsByTag("code").first().childNode(0).attributes().get("comment"));
+        if (spanDoc == null)
+            return;
+        Element card_menNum = spanDoc.getElementsByClass("card_menNum").first();
+        if (card_menNum != null) {
+            int focus = Integer.parseInt(card_menNum.text().replaceAll("[^\\d]+", ""));
+
+            tiebaDto.setFoucs(focus);
+        }
+        Element card_infoNum = spanDoc.getElementsByClass("card_infoNum").first();
+        if (card_infoNum != null) {
+            int postTotal = Integer.parseInt(card_infoNum.text().replaceAll("[^\\d]+", ""));
+
+            tiebaDto.setPostTotal(postTotal);
+        }
+    }
+
+    public static void getAlbumInfo(String html, TiebaDto tiebaDto) {
+        Document doc = Jsoup.parse(html);
+
+        Element albumElements = Jsoup.parse(doc.select("code[id=pagelet_html_album/pagelet/album_good]").first().childNode(0).attributes().get("comment"));
+        if (albumElements == null)
+            return;
+        Element picTotalEle = albumElements.getElementsByClass("picture_amount_total_wrapper").first();
+        if (picTotalEle != null) {
+            String totalText = picTotalEle.text();
+            Pattern pattern = Pattern.compile("\\d+");
+            Matcher matcher = pattern.matcher(totalText);
+            int pictureTotal = 0;
+            if (matcher.find()) {
+                pictureTotal = Integer.parseInt(matcher.group());
+            }
+            tiebaDto.setPicNum(pictureTotal);
+        }
+    }
+
+    public static void getGoodInfo(String html, TiebaDto tiebaDto) {
+        Document doc = Jsoup.parse(html);
+
+        Element goodElements = Jsoup.parse(doc.select("code[id=pagelet_html_frs-list/pagelet/thread_list]").first().childNode(0).attributes().get("comment"));
+        if (goodElements == null)
+            return;
+        Element postSuperiorEle = goodElements.getElementsByClass("th_footer_l").first().getElementsByClass("red_text").first();
+        if (postSuperiorEle != null) {
+            String postSuperiorText = postSuperiorEle.text();
+            Pattern pattern = Pattern.compile("\\d+");
+            Matcher matcher = pattern.matcher(postSuperiorText);
+            int postSuperiorTotal = 0;
+            if (matcher.find()) {
+                postSuperiorTotal = Integer.parseInt(matcher.group());
+            }
+            tiebaDto.setPostSuperior(postSuperiorTotal);
+        }
+    }
+
+    public static void getGroupInfo(String html, TiebaDto tiebaDto) {
+        Document doc = Jsoup.parse(html);
+        Element groupElements = Jsoup.parse(doc.select("code[id=pagelet_html_group/pagelet/group]").first().childNode(0).attributes().get("comment"));
+        if (groupElements == null)
+            return;
+        Element groupMemberEle = groupElements.getElementsByClass("member_count").first();
+        if (groupMemberEle != null) {
+            String groupMemberString = groupMemberEle.text().replaceAll("[^\\d]+", "").trim();
+            tiebaDto.setGroupMenber(Integer.parseInt(groupMemberString));
+        }
+
+        Element groupNumEle = groupElements.getElementsByClass("group_count").first();
+        if (groupNumEle != null) {
+            String groupNum = groupNumEle.text().replaceAll("[^\\d]+", "").trim();
+            tiebaDto.setGroups(Integer.parseInt(groupNum));
+        }
 
     }
 }
