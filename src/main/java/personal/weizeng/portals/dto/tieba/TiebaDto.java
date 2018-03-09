@@ -30,7 +30,7 @@ public class TiebaDto {
 
     private int groupMenber;
 
-    private long date = Calendar.getInstance().getTimeInMillis() / 1000;
+    private long date = Calendar.getInstance().getTimeInMillis();
 
 
     public String getUUId() {

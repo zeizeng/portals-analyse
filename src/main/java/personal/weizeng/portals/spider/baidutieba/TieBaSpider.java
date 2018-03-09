@@ -57,12 +57,6 @@ public class TieBaSpider {
             html = HttpClientUtil.doGet(closeableHttpClient, INDEX_URL, DEFAULT_CHARSET, HEADER);
         } catch (IOException e) {
             e.printStackTrace();
-        }finally {
-            try {
-                closeableHttpClient.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
         }
         ArrayList<CategoryDto> categoryDtos = TieBaParser.getCategoryAndUrl(html);
 
@@ -92,12 +86,6 @@ public class TieBaSpider {
                 html = HttpClientUtil.doGet(closeableHttpClient, crawlUrl, DEFAULT_CHARSET, HEADER);
             } catch (IOException e) {
                 e.printStackTrace();
-            }finally {
-                try {
-                    closeableHttpClient.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
             }
             tieBaNameAndUrl.putAll(TieBaParser.getTieBaNameAndUrl(html));
         }
@@ -120,12 +108,6 @@ public class TieBaSpider {
             html = HttpClientUtil.doGet(closeableHttpClient, url, DEFAULT_CHARSET, HEADER);
         } catch (IOException e) {
             e.printStackTrace();
-        }finally {
-            try {
-                closeableHttpClient.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
         }
         TieBaParser.getHeadInfo(html, tiebaDto);
     }
@@ -150,12 +132,6 @@ public class TieBaSpider {
             html = HttpClientUtil.doGet(closeableHttpClient, url, DEFAULT_CHARSET, HEADER);
         } catch (IOException e) {
             e.printStackTrace();
-        }finally {
-            try {
-                closeableHttpClient.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
         }
         TieBaParser.getGoodInfo(html, tiebaDto);
     }
@@ -169,12 +145,6 @@ public class TieBaSpider {
 
         } catch (IOException e) {
             e.printStackTrace();
-        }finally {
-            try {
-                closeableHttpClient.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
         }
         TieBaParser.getGroupInfo(html, tiebaDto);
     }
@@ -191,9 +161,9 @@ public class TieBaSpider {
         for (CategoryDto categoryDto : categoryDtos) {
             Connection conn = JDBCUtils.getConnection();
             ArrayList<TiebaDto> tiebaDtos = tieBaSpider.crawlLowCategoryPage(categoryDto);
-            int count =1;
+            int count = 1;
             for (TiebaDto tiebaDto : tiebaDtos) {
-                logger.info("No."+(count++)+" 开始爬取"+categoryDto.getSuperCategory()+"-->"+categoryDto.getLowCategory()+"-->"+tiebaDto.getName());
+                logger.info("No." + (count++) + " 开始爬取" + categoryDto.getSuperCategory() + "-->" + categoryDto.getLowCategory() + "-->" + tiebaDto.getName());
                 tieBaSpider.crawlTieBaHeadInfo(tiebaDto);
                 tieBaSpider.crawlTieBaAlbumInfo(tiebaDto);
                 tieBaSpider.crawlTieBaGoodInfo(tiebaDto);

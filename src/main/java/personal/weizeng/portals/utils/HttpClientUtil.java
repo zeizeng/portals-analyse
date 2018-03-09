@@ -46,14 +46,14 @@ public class HttpClientUtil {
     }
 
     public static CloseableHttpResponse get(CloseableHttpClient closeableHttpClient, HttpGet httpGet, long timeout, Map<String, String> headers) {
-        try {
-            logger.info("本次间隔时间：" + timeout / 1000 + "秒");
-            //每次查询都暂停一定时间
-            TimeUnit.MILLISECONDS.sleep(timeout);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-            return null;
-        }
+//        try {
+        logger.info("本次间隔时间：" + timeout / 1000 + "秒");
+        //每次查询都暂停一定时间
+//            TimeUnit.MILLISECONDS.sleep(timeout);
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//            return null;
+//        }
         if (headers != null) {
             for (Map.Entry<String, String> header : headers.entrySet()) {
                 httpGet.setHeader(header.getKey(), header.getValue());
