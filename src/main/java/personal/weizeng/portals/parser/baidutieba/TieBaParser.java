@@ -22,7 +22,7 @@ public class TieBaParser {
     public static ArrayList<CategoryDto> getCategoryAndUrl(String indexHtmlString) {
 
         ArrayList<CategoryDto> categoryDtos = new ArrayList<>();
-        if (indexHtmlString.contains("抱歉，根据相关法律法规和政策，本吧暂不开放。")) {
+        if (indexHtmlString==null||indexHtmlString.contains("抱歉，根据相关法律法规和政策，本吧暂不开放。")) {
             return categoryDtos;
         }
         Document indexDoc = Jsoup.parse(indexHtmlString);
@@ -49,7 +49,7 @@ public class TieBaParser {
 
 
     public static int getLastPageNum(String html) {
-        if (html.contains("抱歉，根据相关法律法规和政策，本吧暂不开放。")) {
+        if (html==null||html.contains("抱歉，根据相关法律法规和政策，本吧暂不开放。")) {
             return 0;
         }
         Document doc = Jsoup.parse(html);
@@ -66,7 +66,7 @@ public class TieBaParser {
 
     public static HashMap<String, String> getTieBaNameAndUrl(String html) {
         HashMap<String, String> tieBaNameAndUrl = new HashMap<>();
-        if (html.contains("抱歉，根据相关法律法规和政策，本吧暂不开放。")) {
+        if (html==null||html.contains("抱歉，根据相关法律法规和政策，本吧暂不开放。")) {
             return tieBaNameAndUrl;
         }
         Document doc = Jsoup.parse(html);
@@ -86,7 +86,7 @@ public class TieBaParser {
     }
 
     public static void getHeadInfo(String html, TiebaDto tiebaDto) {
-        if (html.contains("抱歉，根据相关法律法规和政策，本吧暂不开放。")) {
+        if (html==null||html.contains("抱歉，根据相关法律法规和政策，本吧暂不开放。")) {
             return;
         }
         Document doc = Jsoup.parse(html);
@@ -94,25 +94,30 @@ public class TieBaParser {
         Element pageHead = doc.getElementById("pagelet_html_forum/pagelet/forum_card_number");
         if (pageHead == null)
             return;
-        Document spanDoc = Jsoup.parse(pageHead.getElementsByTag("code").first().childNode(0).attributes().get("comment"));
+        Elements codeElement = pageHead.getElementsByTag("code");
+        if (codeElement == null || codeElement.first() == null || codeElement.first().childNode(0) == null)
+            return;
+        Attributes attributes = codeElement.first().childNode(0).attributes();
+        if (attributes == null || attributes.get("comment") == null)
+            return;
+        Document spanDoc = Jsoup.parse(attributes.get("comment"));
         if (spanDoc == null)
             return;
-        Element card_menNum = spanDoc.getElementsByClass("card_menNum").first();
-        if (card_menNum != null) {
-            int focus = Integer.parseInt(card_menNum.text().replaceAll("[^\\d]+", ""));
+        Elements card_menNum = spanDoc.getElementsByClass("card_menNum");
+        if (card_menNum == null || card_menNum.first() == null)
+            return;
+        int focus = Integer.parseInt(card_menNum.first().text().replaceAll("[^\\d]+", ""));
+        tiebaDto.setFoucs(focus);
 
-            tiebaDto.setFoucs(focus);
-        }
-        Element card_infoNum = spanDoc.getElementsByClass("card_infoNum").first();
-        if (card_infoNum != null) {
-            int postTotal = Integer.parseInt(card_infoNum.text().replaceAll("[^\\d]+", ""));
-
+        Elements card_infoNum = spanDoc.getElementsByClass("card_infoNum");
+        if (card_infoNum != null && card_infoNum.first() != null) {
+            int postTotal = Integer.parseInt(card_infoNum.first().text().replaceAll("[^\\d]+", ""));
             tiebaDto.setPostTotal(postTotal);
         }
     }
 
     public static void getAlbumInfo(String html, TiebaDto tiebaDto) {
-        if (html.contains("抱歉，根据相关法律法规和政策，本吧暂不开放。")) {
+        if (html==null||html.contains("抱歉，根据相关法律法规和政策，本吧暂不开放。")) {
             return;
         }
         Document doc = Jsoup.parse(html);
@@ -141,13 +146,21 @@ public class TieBaParser {
     }
 
     public static void getGoodInfo(String html, TiebaDto tiebaDto) {
-        if (html.contains("抱歉，根据相关法律法规和政策，本吧暂不开放。")) {
+        if (html==null||html.contains("抱歉，根据相关法律法规和政策，本吧暂不开放。")) {
             return;
         }
         Document doc = Jsoup.parse(html);
-
-        Element goodElements = Jsoup.parse(doc.select("code[id=pagelet_html_frs-list/pagelet/thread_list]").first().childNode(0).attributes().get("comment"));
+        Elements codeElements = doc.select("code[id=pagelet_html_frs-list/pagelet/thread_list]");
+        if (codeElements == null || codeElements.first() == null || codeElements.first().childNode(0) == null)
+            return;
+        Attributes attributes = codeElements.first().childNode(0).attributes();
+        if (attributes == null || attributes.get("comment") == null)
+            return;
+        Element goodElements = Jsoup.parse(attributes.get("comment"));
         if (goodElements == null)
+            return;
+        Elements thFooter = goodElements.getElementsByClass("th_footer_l");
+        if (thFooter == null || thFooter.first() == null || thFooter.first().getElementsByClass("red_text") == null)
             return;
         Element postSuperiorEle = goodElements.getElementsByClass("th_footer_l").first().getElementsByClass("red_text").first();
         if (postSuperiorEle != null) {
@@ -163,20 +176,31 @@ public class TieBaParser {
     }
 
     public static void getGroupInfo(String html, TiebaDto tiebaDto) {
-        if (html.contains("抱歉，根据相关法律法规和政策，本吧暂不开放。")) {
+        if (html==null||html.contains("抱歉，根据相关法律法规和政策，本吧暂不开放。")) {
             return;
         }
         Document doc = Jsoup.parse(html);
-        Element groupElements = Jsoup.parse(doc.select("code[id=pagelet_html_group/pagelet/group]").first().childNode(0).attributes().get("comment"));
+        Elements codeElements = doc.select("code[id=pagelet_html_group/pagelet/group]");
+        if (codeElements == null || codeElements.first() == null || codeElements.first().childNode(0) == null)
+            return;
+        Attributes attributes = codeElements.first().childNode(0).attributes();
+        if (attributes == null || attributes.get("comment") == null)
+            return;
+        Element groupElements = Jsoup.parse(attributes.get("comment"));
         if (groupElements == null)
             return;
-        Element groupMemberEle = groupElements.getElementsByClass("member_count").first();
+        Elements memberCount = groupElements.getElementsByClass("member_count");
+        if (memberCount == null)
+            return;
+        Element groupMemberEle = memberCount.first();
         if (groupMemberEle != null) {
             String groupMemberString = groupMemberEle.text().replaceAll("[^\\d]+", "").trim();
             tiebaDto.setGroupMenber(Integer.parseInt(groupMemberString));
         }
-
-        Element groupNumEle = groupElements.getElementsByClass("group_count").first();
+        Elements groupCount = groupElements.getElementsByClass("group_count");
+        if (groupCount == null)
+            return;
+        Element groupNumEle = groupCount.first();
         if (groupNumEle != null) {
             String groupNum = groupNumEle.text().replaceAll("[^\\d]+", "").trim();
             tiebaDto.setGroups(Integer.parseInt(groupNum));

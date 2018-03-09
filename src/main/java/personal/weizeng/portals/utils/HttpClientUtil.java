@@ -106,9 +106,13 @@ public class HttpClientUtil {
             return EntityUtils.toString(closeableHttpResponse.getEntity(), charset);
         } catch (ConnectionClosedException e) {
             logger.error(e.getMessage(), e);
+            return null;
+        } catch (SocketTimeoutException e) {
+            logger.error(e.getMessage(), e);
+            return null;
         } catch (IOException e) {
             logger.error(e.getMessage(), e);
+            return null;
         }
-        return null;
     }
 }
