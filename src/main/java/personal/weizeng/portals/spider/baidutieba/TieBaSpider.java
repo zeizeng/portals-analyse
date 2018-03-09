@@ -142,6 +142,7 @@ public class TieBaSpider {
         String html = null;
         try {
             html = HttpClientUtil.doGet(closeableHttpClient, url, DEFAULT_CHARSET, HEADER);
+
         } catch (IOException e) {
             e.printStackTrace();
         }

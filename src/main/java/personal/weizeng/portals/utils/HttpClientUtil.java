@@ -25,14 +25,21 @@ public class HttpClientUtil {
 
     private static final Logger logger = LoggerFactory.getLogger(HttpClientUtil.class);
 
-    public static String doGet(CloseableHttpClient httpClient, String url, String charset,HashMap<String,String> header) throws IOException {
+
+    public static String doGet(CloseableHttpClient httpClient, String url, String charset, HashMap<String, String> header) throws IOException {
         String html = null;
         logger.info("开始抓取网页：" + url);
         HttpGet httpGet = new HttpGet(url);
-        CloseableHttpResponse closeableHttpResponse = get(httpClient, httpGet, 1000, header);
+        int maxTry = 3;
+        CloseableHttpResponse closeableHttpResponse = null;
+        do {
+            closeableHttpResponse = get(httpClient, httpGet, 1000, header);
+        } while (closeableHttpResponse == null && (--maxTry) != 0);
+
         try {
             html = getHtml(closeableHttpResponse, charset);
         } finally {
+            httpGet.releaseConnection();
             closeableHttpResponse.close();
         }
         return html;
@@ -53,13 +60,16 @@ public class HttpClientUtil {
             }
         }
         CloseableHttpResponse closeableHttpResponse = null;
-
         try {
             closeableHttpResponse = closeableHttpClient.execute(httpGet);
+        } catch (ConnectTimeoutException | SocketTimeoutException e) {
+            logger.error(e.getMessage(), e);
+            logger.debug("请求  超时");
+            return null;
         } catch (IOException e) {
             logger.error(e.getMessage(), e);
             logger.debug(e.getMessage());
-            return closeableHttpResponse;
+            return null;
         }
         return closeableHttpResponse;
     }
@@ -95,8 +105,6 @@ public class HttpClientUtil {
         try {
             return EntityUtils.toString(closeableHttpResponse.getEntity(), charset);
         } catch (ConnectionClosedException e) {
-            logger.error(e.getMessage(), e);
-        } catch (ConnectTimeoutException | SocketTimeoutException e) {
             logger.error(e.getMessage(), e);
         } catch (IOException e) {
             logger.error(e.getMessage(), e);

@@ -1,5 +1,6 @@
 package personal.weizeng.portals.utils;
 
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
 import org.apache.http.conn.socket.ConnectionSocketFactory;
@@ -22,6 +23,9 @@ public class HttpClientGenerator {
 
     private static PoolingHttpClientConnectionManager connectionManager=new PoolingHttpClientConnectionManager();
     private static final Logger logger = LoggerFactory.getLogger(HttpClientGenerator.class);
+    //设置超时时间
+    public static final int REQUEST_TIMEOUT = 2 * 1000;
+    public static final int REQUEST_SOCKET_TIME = 2 * 1000;
     static {
         LayeredConnectionSocketFactory sslsf = null;
         try {
@@ -39,8 +43,13 @@ public class HttpClientGenerator {
     }
 
     public static CloseableHttpClient getHttpClient() {
+        RequestConfig requestConfig = RequestConfig.custom()
+                .setConnectionRequestTimeout(60*1000)
+                .setConnectTimeout(REQUEST_TIMEOUT)
+                .setSocketTimeout(REQUEST_SOCKET_TIME).build();
         CloseableHttpClient httpClient = HttpClients.custom()
                 .setConnectionManager(connectionManager)
+                .setDefaultRequestConfig(requestConfig)
                 .build();
         return httpClient;
     }

@@ -1,6 +1,8 @@
 package personal.weizeng.portals.parser.baidutieba;
 
 import org.jsoup.Jsoup;
+import org.jsoup.nodes.Attribute;
+import org.jsoup.nodes.Attributes;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -20,7 +22,9 @@ public class TieBaParser {
     public static ArrayList<CategoryDto> getCategoryAndUrl(String indexHtmlString) {
 
         ArrayList<CategoryDto> categoryDtos = new ArrayList<>();
-
+        if (indexHtmlString.contains("抱歉，根据相关法律法规和政策，本吧暂不开放。")) {
+            return categoryDtos;
+        }
         Document indexDoc = Jsoup.parse(indexHtmlString);
         Element right_sec = indexDoc.getElementById("right-sec");
         if (right_sec == null) {
@@ -45,6 +49,9 @@ public class TieBaParser {
 
 
     public static int getLastPageNum(String html) {
+        if (html.contains("抱歉，根据相关法律法规和政策，本吧暂不开放。")) {
+            return 0;
+        }
         Document doc = Jsoup.parse(html);
         Elements pagination = doc.getElementsByClass("pagination");
         if (pagination == null) {
@@ -59,6 +66,9 @@ public class TieBaParser {
 
     public static HashMap<String, String> getTieBaNameAndUrl(String html) {
         HashMap<String, String> tieBaNameAndUrl = new HashMap<>();
+        if (html.contains("抱歉，根据相关法律法规和政策，本吧暂不开放。")) {
+            return tieBaNameAndUrl;
+        }
         Document doc = Jsoup.parse(html);
         Element ba_list = doc.getElementById("ba_list");
         if (ba_list == null) {
@@ -76,6 +86,9 @@ public class TieBaParser {
     }
 
     public static void getHeadInfo(String html, TiebaDto tiebaDto) {
+        if (html.contains("抱歉，根据相关法律法规和政策，本吧暂不开放。")) {
+            return;
+        }
         Document doc = Jsoup.parse(html);
 
         Element pageHead = doc.getElementById("pagelet_html_forum/pagelet/forum_card_number");
@@ -99,9 +112,19 @@ public class TieBaParser {
     }
 
     public static void getAlbumInfo(String html, TiebaDto tiebaDto) {
+        if (html.contains("抱歉，根据相关法律法规和政策，本吧暂不开放。")) {
+            return;
+        }
         Document doc = Jsoup.parse(html);
 
-        Element albumElements = Jsoup.parse(doc.select("code[id=pagelet_html_album/pagelet/album_good]").first().childNode(0).attributes().get("comment"));
+        Elements codeElements = doc.select("code[id=pagelet_html_album/pagelet/album_good]");
+        if (codeElements == null || codeElements.first() == null || codeElements.first().childNode(0) == null || codeElements.first().childNode(0).attributes() == null) {
+            return;
+        }
+        String attributes = codeElements.first().childNode(0).attributes().get("comment");
+        if (attributes == null)
+            return;
+        Element albumElements = Jsoup.parse(codeElements.first().childNode(0).attributes().get("comment"));
         if (albumElements == null)
             return;
         Element picTotalEle = albumElements.getElementsByClass("picture_amount_total_wrapper").first();
@@ -118,6 +141,9 @@ public class TieBaParser {
     }
 
     public static void getGoodInfo(String html, TiebaDto tiebaDto) {
+        if (html.contains("抱歉，根据相关法律法规和政策，本吧暂不开放。")) {
+            return;
+        }
         Document doc = Jsoup.parse(html);
 
         Element goodElements = Jsoup.parse(doc.select("code[id=pagelet_html_frs-list/pagelet/thread_list]").first().childNode(0).attributes().get("comment"));
@@ -137,6 +163,9 @@ public class TieBaParser {
     }
 
     public static void getGroupInfo(String html, TiebaDto tiebaDto) {
+        if (html.contains("抱歉，根据相关法律法规和政策，本吧暂不开放。")) {
+            return;
+        }
         Document doc = Jsoup.parse(html);
         Element groupElements = Jsoup.parse(doc.select("code[id=pagelet_html_group/pagelet/group]").first().childNode(0).attributes().get("comment"));
         if (groupElements == null)
