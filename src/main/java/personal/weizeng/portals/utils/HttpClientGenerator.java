@@ -25,7 +25,7 @@ public class HttpClientGenerator {
     private static final Logger logger = LoggerFactory.getLogger(HttpClientGenerator.class);
     //设置超时时间
     public static final int REQUEST_TIMEOUT = 5 * 1000;
-    public static final int REQUEST_SOCKET_TIME = 10 * 1000;
+    public static final int REQUEST_SOCKET_TIME = 20 * 1000;
 
     static {
         LayeredConnectionSocketFactory sslsf = null;

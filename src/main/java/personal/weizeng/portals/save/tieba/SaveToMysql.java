@@ -39,7 +39,6 @@ public class SaveToMysql {
             stmt.executeBatch();
             connection.commit();
             System.out.println("save");
-            connection.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }

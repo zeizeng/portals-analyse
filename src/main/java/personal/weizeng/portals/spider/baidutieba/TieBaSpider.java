@@ -7,12 +7,14 @@ import personal.weizeng.portals.dto.tieba.CategoryDto;
 import personal.weizeng.portals.dto.tieba.TiebaDto;
 import personal.weizeng.portals.parser.baidutieba.TieBaParser;
 import personal.weizeng.portals.save.tieba.SaveToMysql;
+import personal.weizeng.portals.utils.DBUtils;
 import personal.weizeng.portals.utils.HttpClientGenerator;
 import personal.weizeng.portals.utils.HttpClientUtil;
 import personal.weizeng.portals.utils.JDBCUtils;
 
 import java.io.IOException;
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -50,7 +52,7 @@ public class TieBaSpider {
         HEADER.put("User-Agent", "Mozilla/5.0 (Windows NT 6.1; rv:6.0.2) Gecko/20100101 Firefox/6.0.2");
     }
 
-    private ArrayList<CategoryDto> crawlIndexOfTieBa() {
+    public static ArrayList<CategoryDto> crawlIndexOfTieBa() {
         CloseableHttpClient closeableHttpClient = HttpClientGenerator.getHttpClient();
         String html = null;
         try {
@@ -67,7 +69,7 @@ public class TieBaSpider {
     }
 
 
-    private ArrayList<TiebaDto> crawlLowCategoryPage(CategoryDto categoryDto) {
+    private static ArrayList<TiebaDto> crawlLowCategoryPage(CategoryDto categoryDto) {
         ArrayList<TiebaDto> tiebaDtos = new ArrayList<>();
         CloseableHttpClient closeableHttpClient = HttpClientGenerator.getHttpClient();
         String html = null;
@@ -100,7 +102,7 @@ public class TieBaSpider {
         return tiebaDtos;
     }
 
-    private void crawlTieBaHeadInfo(TiebaDto tiebaDto) {
+    private static void crawlTieBaHeadInfo(TiebaDto tiebaDto) {
         String url = TIEBA_PRE_URL + tiebaDto.getUrl();
         CloseableHttpClient closeableHttpClient = HttpClientGenerator.getHttpClient();
         String html = null;
@@ -112,7 +114,7 @@ public class TieBaSpider {
         TieBaParser.getHeadInfo(html, tiebaDto);
     }
 
-    private void crawlTieBaAlbumInfo(TiebaDto tiebaDto) {
+    private static void crawlTieBaAlbumInfo(TiebaDto tiebaDto) {
         String url = TIEBA_PRE_URL + tiebaDto.getUrl() + TIEBA_POSTFIX + "album";
         CloseableHttpClient closeableHttpClient = HttpClientGenerator.getHttpClient();
         String html = null;
@@ -124,7 +126,7 @@ public class TieBaSpider {
         TieBaParser.getAlbumInfo(html, tiebaDto);
     }
 
-    private void crawlTieBaGoodInfo(TiebaDto tiebaDto) {
+    private static void crawlTieBaGoodInfo(TiebaDto tiebaDto) {
         String url = TIEBA_PRE_URL + tiebaDto.getUrl() + TIEBA_POSTFIX + "good";
         CloseableHttpClient closeableHttpClient = HttpClientGenerator.getHttpClient();
         String html = null;
@@ -136,7 +138,7 @@ public class TieBaSpider {
         TieBaParser.getGoodInfo(html, tiebaDto);
     }
 
-    private void crawlTieBaGroupInfo(TiebaDto tiebaDto) {
+    private static void crawlTieBaGroupInfo(TiebaDto tiebaDto) {
         String url = TIEBA_PRE_URL + tiebaDto.getUrl() + TIEBA_POSTFIX + "group";
         CloseableHttpClient closeableHttpClient = HttpClientGenerator.getHttpClient();
         String html = null;
@@ -150,9 +152,8 @@ public class TieBaSpider {
     }
 
 
-    public void singleThread() {
-        TieBaSpider tieBaSpider = new TieBaSpider();
-        ArrayList<CategoryDto> categoryDtos = tieBaSpider.crawlIndexOfTieBa();
+    public static void singleThread() throws SQLException {
+        ArrayList<CategoryDto> categoryDtos = crawlIndexOfTieBa();
         String query = "insert into tieba " +
                 "(uuid,tieba_name,crawl_date,super_category,low_category,url,focus,post_total,post_superior,pic_num," +
                 "groups,group_member)" +
@@ -160,18 +161,37 @@ public class TieBaSpider {
 
         for (CategoryDto categoryDto : categoryDtos) {
             Connection conn = JDBCUtils.getConnection();
-            ArrayList<TiebaDto> tiebaDtos = tieBaSpider.crawlLowCategoryPage(categoryDto);
+            ArrayList<TiebaDto> tiebaDtos = crawlLowCategoryPage(categoryDto);
             int count = 1;
             for (TiebaDto tiebaDto : tiebaDtos) {
-                logger.info("No." + (count++) + " ��ʼ��ȡ" + categoryDto.getSuperCategory() + "-->" + categoryDto.getLowCategory() + "-->" + tiebaDto.getName());
-                tieBaSpider.crawlTieBaHeadInfo(tiebaDto);
-                tieBaSpider.crawlTieBaAlbumInfo(tiebaDto);
-                tieBaSpider.crawlTieBaGoodInfo(tiebaDto);
-                tieBaSpider.crawlTieBaGroupInfo(tiebaDto);
+                logger.info("No." + (count++) + " 开始爬取 " + categoryDto.getSuperCategory() + "-->" + categoryDto.getLowCategory() + "-->" + tiebaDto.getName());
+                crawlTieBaHeadInfo(tiebaDto);
+                crawlTieBaAlbumInfo(tiebaDto);
+                crawlTieBaGoodInfo(tiebaDto);
+                crawlTieBaGroupInfo(tiebaDto);
             }
             SaveToMysql.save2MySql(query, conn, tiebaDtos);
         }
 
 
+    }
+
+    public static void crawlByCategory(CategoryDto categoryDto) throws SQLException {
+        String query = "insert into tieba " +
+                "(uuid,tieba_name,crawl_date,super_category,low_category,url,focus,post_total,post_superior,pic_num," +
+                "groups,group_member)" +
+                "values (?,?,?,?,?,?,?,?,?,?,?,?)";
+
+        Connection conn = DBUtils.getConnection();
+        ArrayList<TiebaDto> tiebaDtos = crawlLowCategoryPage(categoryDto);
+        int count = 1;
+        for (TiebaDto tiebaDto : tiebaDtos) {
+            logger.info("No." + (count++) + " 开始爬取 " + categoryDto.getSuperCategory() + "-->" + categoryDto.getLowCategory() + "-->" + tiebaDto.getName());
+            crawlTieBaHeadInfo(tiebaDto);
+            crawlTieBaAlbumInfo(tiebaDto);
+            crawlTieBaGoodInfo(tiebaDto);
+            crawlTieBaGroupInfo(tiebaDto);
+        }
+        SaveToMysql.save2MySql(query, conn, tiebaDtos);
     }
 }
