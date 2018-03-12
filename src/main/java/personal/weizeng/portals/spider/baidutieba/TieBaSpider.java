@@ -33,6 +33,11 @@ public class TieBaSpider {
     private static final String TIEBA_POSTFIX;
     private static final HashMap<String, String> HEADER = new HashMap<>();
 
+    private static final String insertQuery = "insert into tieba_test " +
+            "(uuid,tieba_name,crawl_date,super_category,low_category,url,focus,post_total,post_superior,pic_num," +
+            "groups,group_member)" +
+            "values (?,?,?,?,?,?,?,?,?,?,?,?)";
+
     static {
         Properties properties = new Properties();
         try {
@@ -177,10 +182,7 @@ public class TieBaSpider {
     }
 
     public static void crawlByCategory(CategoryDto categoryDto) throws SQLException {
-        String query = "insert into tieba " +
-                "(uuid,tieba_name,crawl_date,super_category,low_category,url,focus,post_total,post_superior,pic_num," +
-                "groups,group_member)" +
-                "values (?,?,?,?,?,?,?,?,?,?,?,?)";
+
 
         Connection conn = DBUtils.getConnection();
         ArrayList<TiebaDto> tiebaDtos = crawlLowCategoryPage(categoryDto);
@@ -192,6 +194,6 @@ public class TieBaSpider {
             crawlTieBaGoodInfo(tiebaDto);
             crawlTieBaGroupInfo(tiebaDto);
         }
-        SaveToMysql.save2MySql(query, conn, tiebaDtos);
+        SaveToMysql.save2MySql(insertQuery, conn, tiebaDtos);
     }
 }

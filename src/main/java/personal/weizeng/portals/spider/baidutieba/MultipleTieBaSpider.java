@@ -16,6 +16,7 @@ public class MultipleTieBaSpider implements Runnable {
 
     public MultipleTieBaSpider(CategoryDto categoryDto) {
         this.categoryDto = categoryDto;
+
     }
 
     @Override
@@ -24,9 +25,9 @@ public class MultipleTieBaSpider implements Runnable {
     }
 
     public void crawlByCategory() {
-        TieBaSpider tieBaSpider = new TieBaSpider();
         try {
-            tieBaSpider.crawlByCategory(categoryDto);
+            logger.info(categoryDto.getLowCategory()+"线程开始执行");
+            TieBaSpider.crawlByCategory(categoryDto);
         } catch (SQLException e) {
             e.printStackTrace();
         }
