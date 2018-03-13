@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>personal.weizeng.portals</groupId>
-    <artifactId>portals-analyse</artifactId>
+    <artifactId>portals-spider</artifactId>
     <version>1.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
